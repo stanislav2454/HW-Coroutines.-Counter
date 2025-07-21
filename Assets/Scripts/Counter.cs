@@ -1,20 +1,24 @@
+using System;
 using System.Collections;
 using UnityEngine;
-using TMPro;
 
 public class Counter : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI _counterText;
+    [SerializeField] private UserInput _userInput;
 
     private int _counter = 0;
     private bool _isCounting = false;
+
     private Coroutine _countingCoroutine;
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-            ToggleCounter();
-    }
+    public event Action CounterChanged;
+
+    public int CurrentCounterValue => _counter;
+    public bool CurrentCounterCondition => _isCounting;
+
+    private void OnEnable() => _userInput.MouseButtonDown += ToggleCounter;
+
+    private void OnDisable() => _userInput.MouseButtonDown -= ToggleCounter;
 
     private void ToggleCounter()
     {
@@ -22,6 +26,7 @@ public class Counter : MonoBehaviour
 
         if (_isCounting)
         {
+            CounterChanged?.Invoke();
             _countingCoroutine = StartCoroutine(CountHalfSecond());
         }
         else
@@ -33,14 +38,15 @@ public class Counter : MonoBehaviour
 
     private IEnumerator CountHalfSecond()
     {
+        var wait = new WaitForSeconds(0.5f);
+
         while (true)
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return wait;
+            //yield return new WaitForSeconds(0.5f);
             _counter++;
-
+            // _counterText.text = _counter.ToString();
             Debug.Log("Counter: " + _counter);
-
-            _counterText.text = _counter.ToString();
         }
     }
 }
